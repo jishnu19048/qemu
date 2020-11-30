@@ -1,0 +1,27 @@
+
+To execute the the arm codes in qemu emulator first I saved the code as a.s, then used GNU
+Toolchain assembler to assemble the arm code.
+The command used to create an object file was :
+arm-none-eabi-as -o a.o a.s
+After this using the toolchain linker I converted the .o file to an executable file using:
+arm-none-eabi-ld -Ttext=0x0 -o a.elf a.o
+Then convert this .elf to binary form:
+arm-none-eabi-objcopy -O binary a.elf a.bin
+
+Once the assembling and the compiling part is done, then now I executed the file using qemu
+emulator.
+When qemu emulates the connex board, a file has to be specified which will be treated file as
+Flash memory. The Flash file format is very simple. To get the byte from address X in the Flash,
+qemu reads the byte from offset X in the file. In fact, this is the same as the binary file format.
+To test the program, on the emulated Gumstix connex board, we first create a 16MB file
+representing the Flash. We use the dd command to copy 16MB of zeroes from /dev/zero to the
+file flash.bin.
+dd if=/dev/zero of=flash.bin bs=4096 count=4096
+
+a.bin file is then copied into the beginning of the Flash, using the following command:
+dd if=a.bin of=flash.bin bs=4096 conv=notrunc
+The command to invoke qemu is given below:
+qemu-system-arm -M connex -pflash flash.bin -nographic -serial null
+Now to check the value fo the registers we use the command:
+info registers
+This will give us the values stored at all of the registers.
